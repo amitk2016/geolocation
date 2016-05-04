@@ -22,6 +22,10 @@ mainMap = new google.maps.Map(mapContainer,options);
 
 //now we r ready to show the store market
 placeStoreMarkets();
+
+// Find out if the user wants to share their location
+
+getUserLocation();
 	
 }
 function placeStoreMarkets(){
@@ -164,7 +168,36 @@ for (var i = 0; i < locations.length ; i++) {
 		mainMap.panTo({
 			lat:theChosenMarker.getPosition().lat(),
 			lng:theChosenMarker.getPosition().lng()
+
+
 		});
+		mainMap.setZoom(15);
 	}
 
  }
+
+ 	function getUserLocation(){
+ 		//if geolocation exists as a feature on this device
+
+ 		if (navigator.geolocation) {
+ 			//ASk for the user location 
+ 			navigator.geolocation.getCurrentPosition(function(position){
+ 				console.log(position);
+
+ 				//create a marker for the user 
+
+ 				//place the marker where the user is 
+
+ 				// work out the closest shop
+ 			});
+
+ 		}
+ 	}
+
+
+
+
+
+
+
+
