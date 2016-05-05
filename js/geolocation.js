@@ -1,11 +1,17 @@
 var mainMap;
 var allMarkers =[];
-
+var userMarker;
+var directionsService;
+var directionsDisplay;
 
 function initMap()
 {
 //Get a reference to the map container (div)
 var mapContainer = document.querySelector("#map-container");
+
+directionsService = new google.maps.DirectionsService;
+directionsDisplay = new google.maps.DirectionsRenderer;
+
 
 //set some map options 
 var options = {
@@ -19,6 +25,9 @@ var options = {
 //create new google maps 
 
 mainMap = new google.maps.Map(mapContainer,options);
+
+directionsDisplay.setMap(mainMap);
+
 
 //now we r ready to show the store market
 placeStoreMarkets();
@@ -182,18 +191,114 @@ for (var i = 0; i < locations.length ; i++) {
  		if (navigator.geolocation) {
  			//ASk for the user location 
  			navigator.geolocation.getCurrentPosition(function(position){
- 				console.log(position);
+
+ 				console.log(position.coords.latitude);
 
  				//create a marker for the user 
 
+ 				userMarker = new google.maps.Marker({
+ 					map:mainMap,
+ 					position: {
+ 						lat: position.coords.latitude,
+ 						lng: position.coords.longitude
+ 					},
+ 					//icon:'http://placehold.it/20x30/F0GD06'
+
+ 				});
+
  				//place the marker where the user is 
 
- 				// work out the closest shop
- 			});
+ 				mainMap.panTo({
+ 					lat: position.coords.latitude,
+ 					lng: position.coords.longitude
+ 				});
 
+
+ 				// work out the closest shop
+ 				var userLocation = new google.maps.LatLng({
+ 					lat: position.coords.latitude,
+ 					lng: position.coords.longitude
+ 				});
+
+ 				var closestDistance = 99999999999999999;
+ 				var closestMarker;
+
+ 				// Loop over all the locations 
+
+ 				for (var i = 0; i< allMarkers.length; i++) {
+ 				
+ 				//save a marker in a variable 
+
+ 				var marker = allMarkers[i];
+
+ 				var markerLocation = new google.maps.LatLng({
+ 					lat:marker.getPosition().lat(),
+ 					lng:marker.getPosition().lng()
+
+ 				});
+
+ 				// get distance 
+
+ 				var distance = google.maps.geometry.spherical.computeDistanceBetween(userLocation, markerLocation);
+
+ 				//is this marker closest than the last one ....which is the big value we gave in the starting of variable 
+ 				if(distance < closestDistance ){
+
+ 					//this is the new closest store
+ 					closestDistance = distance;
+ 					closestMarker = marker;
+ 				}
+
+ 				}
+
+ 				console.log(closestMarker);
+
+ 				calculateAndDisplayRoute(closestMarker);
+
+ 					
+ 				
+ 			});
  		}
  	}
 
+
+ 	function calculateAndDisplayRoute(closestMarker){
+ 		var destination = new google.maps.LatLng({
+ 			lat:closestMarker.getPosition().lat(),
+ 			lng:closestMarker.getPosition().lng()
+
+
+ 		});
+
+ 		var origin = new google.maps.LatLng({
+ 			lat:userMarker.getPosition().lat(),
+ 			lng:userMarker.getPosition().lng()
+
+ 		});
+
+ 		var options = {
+
+ 			 travelMode: google.maps.TravelMode.DRIVING,
+ 			 origin:origin,
+ 			 destination: destination
+
+ 		};
+ 		
+ 		directionsService.route(options,function(response, status){
+
+ 			if (status === google.maps.DirectionsStatus.OK) {
+
+      		directionsDisplay.setDirections(response);
+
+    	} 
+
+    	else {
+      window.alert('Directions request failed due to ' + status);
+    	}
+
+
+ 		});
+ 	}
 
 
 
